@@ -1,50 +1,54 @@
 // State Reducer
 // http://localhost:3000/isolated/exercise/05.js
 
-import * as React from 'react'
-import {Switch} from '../switch'
+import * as React from "react";
+import { Switch } from "../switch";
 
-const callAll = (...fns) => (...args) => fns.forEach(fn => fn?.(...args))
+const callAll = (...fns) => (...args) => fns.forEach((fn) => fn?.(...args));
 
-function toggleReducer(state, {type, initialState}) {
+const ACTION_TYPES = {
+  toggle: "toggle",
+  reset: "reset",
+};
+function toggleReducer(state, { type, initialState }) {
   switch (type) {
-    case 'toggle': {
-      return {on: !state.on}
+    case ACTION_TYPES.toggle: {
+      return { on: !state.on };
     }
-    case 'reset': {
-      return initialState
+    case ACTION_TYPES.reset: {
+      return initialState;
     }
     default: {
-      throw new Error(`Unsupported type: ${type}`)
+      throw new Error(`Unsupported type: ${type}`);
     }
   }
 }
 
 // 🐨 add a new option called `reducer` that defaults to `toggleReducer`
-function useToggle({initialOn = false} = {}) {
-  const {current: initialState} = React.useRef({on: initialOn})
+function useToggle({ initialOn = false, reducer = toggleReducer } = {}) {
+  const { current: initialState } = React.useRef({ on: initialOn });
   // 🐨 instead of passing `toggleReducer` here, pass the `reducer` that's
   // provided as an option
   // ... and that's it! Don't forget to check the 💯 extra credit!
-  const [state, dispatch] = React.useReducer(toggleReducer, initialState)
-  const {on} = state
+  const [state, dispatch] = React.useReducer(reducer, initialState);
+  const { on } = state;
 
-  const toggle = () => dispatch({type: 'toggle'})
-  const reset = () => dispatch({type: 'reset', initialState})
+  const toggle = () => dispatch({ type: "toggle" });
+  const reset = () => dispatch({ type: "reset", initialState });
 
-  function getTogglerProps({onClick, ...props} = {}) {
+  function getTogglerProps({ onClick, ...props } = {}) {
     return {
-      'aria-pressed': on,
+      "aria-pressed": on,
       onClick: callAll(onClick, toggle),
       ...props,
-    }
+    };
   }
 
-  function getResetterProps({onClick, ...props} = {}) {
+  function getResetterProps({ onClick, ...props } = {}) {
     return {
       onClick: callAll(onClick, reset),
       ...props,
-    }
+    };
   }
 
   return {
@@ -53,33 +57,33 @@ function useToggle({initialOn = false} = {}) {
     toggle,
     getTogglerProps,
     getResetterProps,
-  }
+  };
 }
 
 function App() {
-  const [timesClicked, setTimesClicked] = React.useState(0)
-  const clickedTooMuch = timesClicked >= 4
+  const [timesClicked, setTimesClicked] = React.useState(0);
+  const clickedTooMuch = timesClicked >= 4;
 
   function toggleStateReducer(state, action) {
     switch (action.type) {
-      case 'toggle': {
+      case ACTION_TYPES.toggle: {
         if (clickedTooMuch) {
-          return {on: state.on}
+          return { on: state.on };
         }
-        return {on: !state.on}
+        return { on: !state.on };
       }
-      case 'reset': {
-        return {on: false}
+      case ACTION_TYPES.reset: {
+        return { on: false };
       }
       default: {
-        throw new Error(`Unsupported type: ${action.type}`)
+        throw new Error(`Unsupported type: ${action.type}`);
       }
     }
   }
 
-  const {on, getTogglerProps, getResetterProps} = useToggle({
+  const { on, getTogglerProps, getResetterProps } = useToggle({
     reducer: toggleStateReducer,
-  })
+  });
 
   return (
     <div>
@@ -87,7 +91,7 @@ function App() {
         {...getTogglerProps({
           disabled: clickedTooMuch,
           on: on,
-          onClick: () => setTimesClicked(count => count + 1),
+          onClick: () => setTimesClicked((count) => count + 1),
         })}
       />
       {clickedTooMuch ? (
@@ -98,16 +102,11 @@ function App() {
       ) : timesClicked > 0 ? (
         <div data-testid="click-count">Click count: {timesClicked}</div>
       ) : null}
-      <button {...getResetterProps({onClick: () => setTimesClicked(0)})}>
+      <button {...getResetterProps({ onClick: () => setTimesClicked(0) })}>
         Reset
       </button>
     </div>
-  )
+  );
 }
 
-export default App
-
-/*
-eslint
-  no-unused-vars: "off",
-*/
+export default App;
